@@ -1,0 +1,120 @@
+name: 7-docker-prebuild
+on:
+  workflow_dispatch:
+  push:
+jobs:
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-fmt-${{ hashFiles('**/Cargo.lock') }}
+    - uses: actions-rust-lang/setup-rust-toolchain@v1
+    - name: Rustfmt Check
+      uses: actions-rust-lang/rustfmt@v1
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-clippy-${{ hashFiles('**/Cargo.lock') }}
+    - uses: actions-rust-lang/setup-rust-toolchain@v1
+    - name: Run clippy
+      run: cargo clippy --all -- -D warnings
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-test-${{ hashFiles('**/Cargo.lock') }}
+    - uses: actions-rust-lang/setup-rust-toolchain@v1
+    - name: Cargo Test
+      run: cargo test
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-build-release-${{ hashFiles('**/Cargo.lock') }}
+    - uses: actions-rust-lang/setup-rust-toolchain@v1
+    - name: Build artifact
+      run: cargo build --release
+    - uses: actions/upload-artifact@v4
+      with:
+        name: demo-cicd-${{ github.sha }}
+        path: target/release/demo-cicd
+        retention-days: 1
+  integration-test:
+    needs: [fmt, clippy, test, build]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-integration-test-${{ hashFiles('**/Cargo.lock') }}
+    - uses: gacts/install-hurl@v1
+    - uses: actions/download-artifact@v4
+      with:
+        name: demo-cicd-${{ github.sha }}
+    - name: fix permissions
+      run: |
+        chmod +x demo-cicd
+    - name: run server
+      run: ./demo-cicd > 1.log 2>&1 &
+    - name: check status
+      run: |
+        timeout 10s grep -q 'listening on' <(tail -f 1.log)
+    - name: api tests
+      run: hurl --test tests/*.hurl
+    - name: logs
+      if: always()
+      run: cat 1.log
+  docker:
+    runs-on: ubuntu-latest
+    needs: [integration-test]
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    - uses: actions/download-artifact@v4
+      with:
+        name: demo-cicd-${{ github.sha }}
+    - name: fix permissions
+      run: |
+        chmod +x demo-cicd
+    - name: Build Docker image
+      run: docker build -t demo-cicd -f Dockerfile.full .

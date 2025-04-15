@@ -1,0 +1,6 @@
+FROM ubuntu:22.04 AS runner
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates libssl3 && update-ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+ADD demo-cicd /bin/demo-cicd
+CMD ["/bin/demo-cicd"]
