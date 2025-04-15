@@ -117,4 +117,4 @@ jobs:
       run: |
         chmod +x demo-cicd
     - name: Build Docker image
-      run: docker build -t demo-cicd -f Dockerfile.full .
+      run: docker build -t demo-cicd -f Dockerfile.prebuild .
