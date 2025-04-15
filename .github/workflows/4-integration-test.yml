@@ -1,0 +1,99 @@
+name: 4-integration-test
+on:
+  workflow_dispatch:
+  push:
+jobs:
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/cache@v4
+      if: ${{ ! startsWith(runner.name,'dtz-') }}
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-fmt-${{ hashFiles('**/Cargo.lock') }}
+    - uses: actions-rust-lang/setup-rust-toolchain@v1
+    - name: Rustfmt Check
+      uses: actions-rust-lang/rustfmt@v1
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/cache@v4
+      if: ${{ ! startsWith(runner.name,'dtz-') }}
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-clippy-${{ hashFiles('**/Cargo.lock') }}
+    - uses: actions-rust-lang/setup-rust-toolchain@v1
+    - name: Run clippy
+      run: cargo clippy --all -- -D warnings
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/cache@v4
+      if: ${{ ! startsWith(runner.name,'dtz-') }}
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-test-${{ hashFiles('**/Cargo.lock') }}
+    - uses: actions-rust-lang/setup-rust-toolchain@v1
+    - name: Cargo Test
+      run: cargo test
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/cache@v4
+      if: ${{ ! startsWith(runner.name,'dtz-') }}
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-build-${{ hashFiles('**/Cargo.lock') }}
+    - uses: actions-rust-lang/setup-rust-toolchain@v1
+    - name: Build artifact
+      run: cargo build
+  integration-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/cache@v4
+      if: ${{ ! startsWith(runner.name,'dtz-') }}
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-build-${{ hashFiles('**/Cargo.lock') }}
+    - uses: gacts/install-hurl@v1
+    - uses: actions-rust-lang/setup-rust-toolchain@v1
+    - name: run server
+      run: cargo run > 1.log 2>&1 &
+    - name: check status
+      run: |
+        timeout 10s grep -q 'listening on' <(tail -f 1.log)
+    - name: api tests
+      run: hurl --test tests/*.hurl
+    - name: logs
+      if: always()
+      run: cat 1.log
