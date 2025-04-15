@@ -1,4 +1,4 @@
-use axum::{extract::Path, routing::get, Router};
+use axum::{Router, extract::Path, routing::get};
 
 async fn hello_world() -> &'static str {
     "Hello, World!"
@@ -14,10 +14,8 @@ async fn main() {
         .route("/", get(hello_world))
         .route("/{user}", get(hello_user));
 
-    let addr = format!("0.0.0.0:3000");
+    let addr = "0.0.0.0:3000".to_string();
     println!("listening on {}", addr);
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    axum::serve(listener, app)
-        .await
-        .unwrap();
-    }
+    axum::serve(listener, app).await.unwrap();
+}
