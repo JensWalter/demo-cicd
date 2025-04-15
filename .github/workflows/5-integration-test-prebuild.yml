@@ -8,7 +8,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: actions/cache@v4
-      if: ${{ ! startsWith(runner.name,'dtz-') }}
       with:
         path: |
           ~/.cargo/bin/
@@ -25,7 +24,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: actions/cache@v4
-      if: ${{ ! startsWith(runner.name,'dtz-') }}
       with:
         path: |
           ~/.cargo/bin/
@@ -42,7 +40,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: actions/cache@v4
-      if: ${{ ! startsWith(runner.name,'dtz-') }}
       with:
         path: |
           ~/.cargo/bin/
@@ -59,7 +56,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: actions/cache@v4
-      if: ${{ ! startsWith(runner.name,'dtz-') }}
       with:
         path: |
           ~/.cargo/bin/
@@ -81,7 +77,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: actions/cache@v4
-      if: ${{ ! startsWith(runner.name,'dtz-') }}
       with:
         path: |
           ~/.cargo/bin/
