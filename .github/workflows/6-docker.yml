@@ -1,4 +1,4 @@
-name: 5-integration-test-prebuild
+name: 6-docker
 on:
   workflow_dispatch:
   push:
