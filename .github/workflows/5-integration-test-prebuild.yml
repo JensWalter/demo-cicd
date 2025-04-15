@@ -73,7 +73,7 @@ jobs:
         path: target/debug/demo-cicd
         retention-days: 1
   integration-test:
-    needs: build
+    needs: [fmt, clippy, test, build]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
