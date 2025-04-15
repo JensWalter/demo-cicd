@@ -4,6 +4,7 @@ async fn hello_world() -> &'static str {
     "Hello, World!"
 }
 
+/// Say hello to a user
 async fn hello_user(Path(user): Path<String>) -> String {
     format!("Hello, {}!", user)
 }
