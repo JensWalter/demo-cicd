@@ -1,0 +1,11 @@
+FROM rust:1.85-bookworm AS builder
+WORKDIR /app
+ADD . .
+RUN cargo build -r
+
+FROM debian:bookworm AS runner
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates libssl3 && update-ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /app/target/release/demo-cicd /bin/demo-cicd
+CMD ["/bin/demo-cicd"]
