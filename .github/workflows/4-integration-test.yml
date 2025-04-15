@@ -82,6 +82,8 @@ jobs:
         key: ${{ runner.os }}-build-${{ hashFiles('**/Cargo.lock') }}
     - uses: gacts/install-hurl@v1
     - uses: actions-rust-lang/setup-rust-toolchain@v1
+    - name: build server
+      run: cargo build
     - name: run server
       run: cargo run > 1.log 2>&1 &
     - name: check status
