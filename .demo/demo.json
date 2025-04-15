@@ -1,0 +1,17 @@
+{
+  "$schema": "https://demotime.elio.dev/demo-time.schema.json",
+  "title": "Demo",
+  "description": "Demo description",
+  "demos": [
+    {
+      "title": "slide1",
+      "description": "slide1",
+      "steps": [
+        {
+          "action": "openSlide",
+          "path": ".demo/slide1.md"
+        }
+      ]
+    }
+  ]
+}
